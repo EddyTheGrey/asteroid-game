@@ -1,9 +1,12 @@
+import sys
 import pygame
 import constants
 import player 
 import asteroid
 import asteroidfield
+import shot
 from logger import log_state
+from logger import log_event
 
 
 def main():
@@ -17,10 +20,12 @@ def main():
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
 
     player.Player.containers = (updatable,drawable)
     asteroid.Asteroid.containers = (asteroids, updatable, drawable)
     asteroidfield.AsteroidField.containers = (updatable)
+    shot.Shot.containers = (shots,updatable,drawable)
 
 
     clocks = pygame.time.Clock()
@@ -43,9 +48,21 @@ def main():
         #Character actions
         for X in updatable:
             X.update(dt)
+            if X == charater:
+                charater.cool_down -= dt 
         for X in drawable:
             X.draw(screen)
         
+        for X in asteroids:
+            if charater.collides_with(X) == True:
+                log_event("player_hit")
+                print("Game over!")
+                sys.exit()
+            for Y in shots:
+                if Y.collides_with(X) == True:
+                    log_event("asteroid_shot")
+                    X.split()
+                    Y.kill()
         pygame.display.flip()
 
 
